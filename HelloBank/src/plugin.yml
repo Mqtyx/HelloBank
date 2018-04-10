@@ -1,3 +1,6 @@
 name: HelloBank
 main: hellobank.main.Main
 version: 1.0.0
+commands:
+  bank:
+    description: Bank and ATM system!
