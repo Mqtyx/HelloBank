@@ -2,14 +2,17 @@ package hellobank.events;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.block.Block;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 
 import hellobank.data.ATM;
 import hellobank.data.BankAccount;
 import hellobank.main.Main;
+import hellobank.utils.Utils;
 
 public class BankEvents implements Listener {
 	
@@ -31,5 +34,25 @@ public class BankEvents implements Listener {
 	        	}
 	        }
 	    }
+	}
+	
+	@EventHandler
+	public void BlockBreakEvent(BlockBreakEvent e) {
+		Block brokenBlock = e.getBlock();
+		ATM chest = ATM.getChest(brokenBlock);
+		if (chest != null) {
+			if (!e.getPlayer().hasPermission(Utils.pm)) {
+				e.getPlayer().sendMessage(ChatColor.RED + "You can not break ATMs!");
+				e.setCancelled(true);
+				return;
+			} else {
+				ATM.atms.remove(chest);
+				String id = Utils.getIdByBlock(brokenBlock);
+				if (id != null) {
+					Main.INSTANCE.getConfig().set("ATM." + id, null);
+				}
+				Utils.count = Utils.count - 1;
+			}
+		}
 	}
 }

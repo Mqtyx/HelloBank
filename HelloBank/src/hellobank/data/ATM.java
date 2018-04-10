@@ -27,7 +27,7 @@ public class ATM {
 	
 	public static boolean isChest(Block block) {
 		for (ATM atm : atms) {
-			if (atm.getChest().equals(block)) {
+			if (atm.getBlock().equals(block)) {
 				return true;
 			}
 		}
@@ -38,7 +38,7 @@ public class ATM {
 		this.uuid = uuid;
 	}
 
-	public Block getChest() {
+	public Block getBlock() {
 		return block;
 	}
 
@@ -52,5 +52,14 @@ public class ATM {
 
 	public void setLoc(Location loc) {
 		this.loc = loc;
+	}
+
+	public static ATM getChest(Block brokenBlock) {
+		for (ATM atm : atms) {
+			if (atm.getBlock().equals(brokenBlock)) {
+				return atm;
+			}
+		}
+		return null;
 	}
 }

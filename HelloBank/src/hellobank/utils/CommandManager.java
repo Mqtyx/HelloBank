@@ -27,6 +27,7 @@ public class CommandManager implements CommandExecutor {
 				return true;
 			}
 			String func = args[0];
+			UUID uuid = plr.getUniqueId();
 			if (func.equals("atm")) {
 				if (!plr.hasPermission(Utils.pm)) {
 					plr.sendMessage(ChatColor.RED + "You don't have access to this command!");
@@ -36,10 +37,15 @@ public class CommandManager implements CommandExecutor {
 				Bukkit.getServer().getWorld(loc.getWorld().getName()).getBlockAt(loc).setType(Material.CHEST);
 				Block chest = loc.getWorld().getBlockAt(loc);
 				plr.sendMessage(ChatColor.GREEN + "Added an ATM successfully!");
-				new ATM(plr.getUniqueId(), chest, loc);
+				new ATM(uuid, chest, loc);
+				Utils.count = Utils.count + 1;
+				Main.INSTANCE.getConfig().set("ATM." + Utils.count + ".X", loc.getBlockX());
+				Main.INSTANCE.getConfig().set("ATM." + Utils.count + ".Y", loc.getBlockY());
+				Main.INSTANCE.getConfig().set("ATM." + Utils.count + ".Z", loc.getBlockZ());
+				Main.INSTANCE.getConfig().set("ATM." + Utils.count + ".World", loc.getWorld().getName());
+				Main.INSTANCE.getConfig().set("ATM." + Utils.count + ".UUID", uuid.toString());
 				return true;
 			}
-			UUID uuid = plr.getUniqueId();
 			if (func.equals("addaccount")) {
 				if (BankAccount.isAccount(uuid)) {
 					plr.sendMessage(ChatColor.RED + "You already have a registered account.");
