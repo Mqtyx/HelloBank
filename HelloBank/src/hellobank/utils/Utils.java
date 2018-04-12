@@ -1,5 +1,6 @@
 package hellobank.utils;
 
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -9,8 +10,11 @@ import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.permissions.Permission;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 import hellobank.data.ATM;
@@ -27,12 +31,23 @@ public class Utils {
 		// Adding commands to the map
 		guide.put("addaccount <acc> <pin>", "Creates HelloBank account");
 		guide.put("removeaccount <acc> <pin>", "Deletes your HelloBank account");
+		guide.put("pin <pin>",  "To use ATMs for the next 30 seconds.");
+		guide.put("changepin <oldPin> <newPin>", "Changes your pin to a new pin you choose.");
 		if (Main.INSTANCE.getConfig().getConfigurationSection("Accounts") != null) {
 		    for (String uuid : Main.INSTANCE.getConfig().getConfigurationSection("Accounts").getKeys(false)) {
 		    	String path = "Accounts." + uuid + ".";
-		    	String accName = Main.INSTANCE.getConfig().getString(path + "AccountName");
+		    	String accName = Main.INSTANCE.getConfig().getString(path + "Account");
 		    	String pin = Main.INSTANCE.getConfig().getString(path + "Pin");
-		    	new BankAccount(UUID.fromString(uuid), accName, pin);
+		    	List<ItemStack> items = Lists.newArrayList();
+		    	if (Main.INSTANCE.getConfig().getConfigurationSection(path + "Items") != null) {
+			    	for (String c : Main.INSTANCE.getConfig().getConfigurationSection(path + "Items").getKeys(false)) {
+			    		Object p = Main.INSTANCE.getConfig().get("Accounts." + uuid + ".Items." + c);
+			    		if (p != null && (ItemStack) p != null) {
+			    			items.add((ItemStack) p);
+			    		}
+			    	}
+		    	}
+		    	new BankAccount(UUID.fromString(uuid), accName, pin, items);
 		    }
 		}
 	    if (Main.INSTANCE.getConfig().getConfigurationSection("ATM") != null) {
@@ -82,5 +97,24 @@ public class Utils {
 		    }
 	    }
 		return null;
+	}
+
+	public static void update(Player plr, Inventory inv) {
+		int count = 1;
+		BankAccount acc = BankAccount.getAccountFromUUID(plr.getUniqueId());
+		acc.getItems().clear();
+		for (ItemStack item : inv.getContents()) {
+			acc.getItems().add(item);
+		}
+		for (ItemStack item : inv.getContents()) {
+			Main.INSTANCE.getConfig().set("Accounts." + plr.getUniqueId().toString() + ".Items." + count, item);
+			count++;
+		}
+	}
+	
+	public static void debug(String msg) {
+		for (Player plr : Bukkit.getOnlinePlayers()) {
+			plr.sendMessage(msg);
+		}
 	}
 }

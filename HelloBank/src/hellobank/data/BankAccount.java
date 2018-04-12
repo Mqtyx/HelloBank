@@ -3,28 +3,44 @@ package hellobank.data;
 import java.util.List;
 import java.util.UUID;
 
+import org.bukkit.inventory.ItemStack;
+
 import com.google.common.collect.Lists;
+
+import hellobank.main.Main;
 
 public class BankAccount {
 	private UUID uuid;
 	private String acc;
 	private String password;
+	private double lastPasswordCheck;
+	private List<ItemStack> items = Lists.newArrayList();
 	public static List<BankAccount> accounts = Lists.newArrayList();
+	
+	public BankAccount(UUID uuid, String acc, String password, List<ItemStack> items) {
+		this.uuid = uuid;
+		this.acc = acc;
+		this.password = password;
+		this.lastPasswordCheck = 0;
+		this.items = items;
+		accounts.add(this);
+	}
 	
 	public BankAccount(UUID uuid, String acc, String password) {
 		this.uuid = uuid;
 		this.acc = acc;
 		this.password = password;
+		this.lastPasswordCheck = 0;
 		accounts.add(this);
 	}
 	
-	public static boolean isAccount(UUID uniqueId) {
+	public static BankAccount getAccountFromUUID(UUID uniqueId) {
 		for (BankAccount e : accounts) {
 			if (e.getUUID().equals(uniqueId)) {
-				return true;
+				return e;
 			}
 		}
-		return false;
+		return null;
 	}
 	
 	public static boolean deleteAccount(UUID uniqueId) {
@@ -46,7 +62,7 @@ public class BankAccount {
 	}
 
 	public String getAccount() {
-		return acc;
+		return this.acc;
 	}
 
 	public void setAccount(String acc) {
@@ -54,19 +70,36 @@ public class BankAccount {
 	}
 
 	public String getPassword() {
-		return password;
+		return this.password;
 	}
 
-	public void setPassword(String password) {
-		this.password = password;
+	public void setPassword(String pin) {
+		this.password = pin;
+		Main.INSTANCE.getConfig().set("Accounts." + this.uuid.toString() + ".Pin", pin);
 	}
 
-	public static boolean isTaken(String acc) {
+	public static boolean isAccountTaken(String acc) {
 		for (BankAccount e : accounts) {
 			if (e.getAccount().equals(acc)) {
 				return true;
 			}
 		}
 		return false;
+	}
+
+	public double getLastPasswordCheck() {
+		return lastPasswordCheck;
+	}
+
+	public void setLastPasswordCheck(double lastPasswordCheck) {
+		this.lastPasswordCheck = lastPasswordCheck;
+	}
+
+	public List<ItemStack> getItems() {
+		return items;
+	}
+
+	public void setItems(List<ItemStack> itemStacks) {
+		this.items = itemStacks;
 	}
 }

@@ -47,21 +47,25 @@ public class CommandManager implements CommandExecutor {
 				return true;
 			}
 			if (func.equals("addaccount")) {
-				if (BankAccount.isAccount(uuid)) {
+				if (BankAccount.getAccountFromUUID(uuid) != null) {
 					plr.sendMessage(ChatColor.RED + "You already have a registered account.");
 					return false;
 				}
-				if (args.length < 2) {
-					plr.sendMessage(ChatColor.RED + "Usage: addaccount <acc> <pin>.");
+				if (args.length < 3) {
+					plr.sendMessage(ChatColor.RED + "Usage: /bank addaccount <acc> <pin>.");
 					return false;
 				}
 				String acc = args[1];
 				String pin = args[2];
-				if (pin.length() < 6 || acc.length() < 6) {
-					plr.sendMessage(ChatColor.RED + "Account/pin mustn't be less than 6 characters.");
+				if (acc.length() < 6 || acc.length() > 20) {
+					plr.sendMessage(ChatColor.RED + "Account must be between 6 and 20 characters.");
 					return false;
 				}
-				if (BankAccount.isTaken(acc)) {
+				if (pin.length() < 4 || pin.length() > 12) {
+					plr.sendMessage(ChatColor.RED + "Pin must be between 4 and 12 characters.");
+					return false;
+				}
+				if (BankAccount.isAccountTaken(acc)) {
 					plr.sendMessage(ChatColor.RED + "" + acc + " is already taken.");
 					return false;
 				}
@@ -72,8 +76,19 @@ public class CommandManager implements CommandExecutor {
 				return true;
 			}
 			if (func.equals("deleteaccount") || func.equals("removeaccount")) {
-				if (!BankAccount.isAccount(uuid)) {
+				BankAccount acc = BankAccount.getAccountFromUUID(uuid);
+				if (acc == null) {
 					plr.sendMessage(ChatColor.RED + "You don't have an account to delete.");
+					return false;
+				}
+				if (args.length < 3) {
+					plr.sendMessage(ChatColor.RED + "Usage: /bank " + func + " <acc> <pin>.");
+					return false;
+				}
+				String accName = args[1];
+				String pass = args[2];
+				if (!acc.getAccount().equals(accName) || (!acc.getPassword().equals(pass))) {
+					plr.sendMessage(ChatColor.RED + "Invalid credentials.");
 					return false;
 				}
 				boolean success = BankAccount.deleteAccount(uuid);
@@ -83,6 +98,49 @@ public class CommandManager implements CommandExecutor {
 				} else {
 					plr.sendMessage(ChatColor.RED + "An error has occurred while deleting your account.");
 				}
+				return true;
+			}
+			if (func.equals("pin")) {
+				BankAccount acc = BankAccount.getAccountFromUUID(uuid);
+				if (acc == null) {
+					plr.sendMessage(ChatColor.RED + "You don't have an account.");
+					return false;
+				}
+				if (args.length < 2) {
+					plr.sendMessage(ChatColor.RED + "Usage: /bank pin <password>.");
+					return false;
+				}
+				String enteredPassword = args[1];
+				if (!acc.getPassword().equals(enteredPassword)) {
+					plr.sendMessage(ChatColor.RED + "Wrong password.");
+					return false;
+				}
+				acc.setLastPasswordCheck(System.currentTimeMillis());
+				plr.sendMessage(ChatColor.GREEN + "Successfully entered your account for 30 seconds!");
+				return true;
+			}
+			if (func.equals("changepin")) {
+				BankAccount acc = BankAccount.getAccountFromUUID(uuid);
+				if (acc == null) {
+					plr.sendMessage(ChatColor.RED + "You don't have an account.");
+					return false;
+				}
+				if (args.length < 3) {
+					plr.sendMessage(ChatColor.RED + "Usage: /bank changepin <oldPin> <newPin>.");
+					return false;
+				}
+				String oldPass = args[1];
+				String newPass = args[2];
+				if (!acc.getPassword().equals(oldPass)) {
+					plr.sendMessage(ChatColor.RED + "Wrong password.");
+					return false;
+				}
+				if (newPass.length() < 4 || newPass.length() > 12) {
+					plr.sendMessage(ChatColor.RED + "Pin must be between 4 and 12 characters.");
+					return false;
+				}
+				acc.setPassword(newPass);
+				plr.sendMessage(ChatColor.GREEN + "Successfully changed your password from '" + oldPass + "' to '" + newPass + "'!");
 				return true;
 			}
 			Utils.showGuide(plr);
