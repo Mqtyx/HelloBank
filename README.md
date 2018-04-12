@@ -1,6 +1,6 @@
 # HelloBank for Minecraft!
 
-HelloBank plugin is an open source project. It is used to store your items in an ATM. There are some commands you can use to manage your account.
+HelloBank plugin is an open source project. It is used to store your items in the bank. There are some commands you can use to manage your account.
 
 # Commands
 - /bank addaccount <acc> <pin> > Creates HelloBank account
