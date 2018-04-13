@@ -3,70 +3,33 @@ package hellobank.data;
 import java.util.List;
 import java.util.UUID;
 
+import org.bukkit.configuration.InvalidConfigurationException;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.inventory.ItemStack;
-
-import com.google.common.collect.Lists;
 
 import hellobank.main.Main;
 
 public class BankAccount {
 	private UUID uuid;
-	private String acc;
 	private String password;
 	private double lastPasswordCheck;
-	private List<ItemStack> items = Lists.newArrayList();
-	public static List<BankAccount> accounts = Lists.newArrayList();
+	private String items;
 	
-	public BankAccount(UUID uuid, String acc, String password, List<ItemStack> items) {
+	public BankAccount(UUID uuid, String password, List<ItemStack> items) {
 		this.uuid = uuid;
-		this.acc = acc;
 		this.password = password;
 		this.lastPasswordCheck = 0;
-		this.items = items;
-		accounts.add(this);
+		setItems(items);
 	}
 	
-	public BankAccount(UUID uuid, String acc, String password) {
+	public BankAccount(UUID uuid, String password) {
 		this.uuid = uuid;
-		this.acc = acc;
 		this.password = password;
 		this.lastPasswordCheck = 0;
-		accounts.add(this);
 	}
 	
-	public static BankAccount getAccountFromUUID(UUID uniqueId) {
-		for (BankAccount e : accounts) {
-			if (e.getUUID().equals(uniqueId)) {
-				return e;
-			}
-		}
-		return null;
-	}
-	
-	public static boolean deleteAccount(UUID uniqueId) {
-		for (BankAccount e : accounts) {
-			if (e.getUUID().equals(uniqueId)) {
-				accounts.remove(e);
-				return true;
-			}
-		}
-		return false;
-	}
-
 	public UUID getUUID() {
 		return uuid;
-	}
-
-	public void setUUId(UUID uuid) {
-		this.uuid = uuid;
-	}
-
-	public String getAccount() {
-		return this.acc;
-	}
-
-	public void setAccount(String acc) {
-		this.acc = acc;
 	}
 
 	public String getPassword() {
@@ -75,16 +38,7 @@ public class BankAccount {
 
 	public void setPassword(String pin) {
 		this.password = pin;
-		Main.INSTANCE.getConfig().set("Accounts." + this.uuid.toString() + ".Pin", pin);
-	}
-
-	public static boolean isAccountTaken(String acc) {
-		for (BankAccount e : accounts) {
-			if (e.getAccount().equals(acc)) {
-				return true;
-			}
-		}
-		return false;
+		Main.accountManager.save(this);
 	}
 
 	public double getLastPasswordCheck() {
@@ -95,11 +49,35 @@ public class BankAccount {
 		this.lastPasswordCheck = lastPasswordCheck;
 	}
 
-	public List<ItemStack> getItems() {
-		return items;
+	/*
+	 * Generates a list of items in this account
+	 * DO NOT USE TO STORE ITEMS! use setItems
+	 */
+	public List<ItemStack> getItems()
+	{
+		if(items == null) return null;
+		
+		YamlConfiguration config = new YamlConfiguration();
+		try
+		{
+			config.loadFromString(items);
+		} catch (InvalidConfigurationException e)
+		{
+			e.printStackTrace();
+		}
+		return (List<ItemStack>) config.getList("items");
 	}
-
-	public void setItems(List<ItemStack> itemStacks) {
-		this.items = itemStacks;
+	public void setItems(List<ItemStack> items)
+	{
+		if(items == null)
+		{
+			this.items = null;
+		} else {
+			YamlConfiguration config = new YamlConfiguration();
+			config.set("items", items);
+			this.items = config.saveToString();
+		}
+		
+		Main.accountManager.save(this);
 	}
 }

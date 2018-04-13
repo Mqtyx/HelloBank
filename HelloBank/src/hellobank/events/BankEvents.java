@@ -35,11 +35,11 @@ public class BankEvents implements Listener {
 	public void onPlayerInteractChest(PlayerInteractEvent e) {
 	    if (e.getAction() == Action.RIGHT_CLICK_BLOCK) {
 	        if(e.getClickedBlock().getType().equals(Material.CHEST)) {
-	        	if (!ATM.isChest(e.getClickedBlock())) {
+	        	if (!Main.atmManager.isAtm(e.getClickedBlock())) {
 	        		return;
 	        	}
 	        	Player plr = (Player) e.getPlayer();
-	        	BankAccount acc = BankAccount.getAccountFromUUID(plr.getUniqueId());
+	        	BankAccount acc = Main.accountManager.getAccountFromUUID(plr.getUniqueId());
 	        	e.setCancelled(true);
 	        	if (acc == null) {
 	        		 plr.sendMessage(ChatColor.RED + "You don't have an account on HelloBank to have access to ATM.");
@@ -74,19 +74,14 @@ public class BankEvents implements Listener {
 	@EventHandler
 	public void BlockBreakEvent(BlockBreakEvent e) {
 		Block brokenBlock = e.getBlock();
-		ATM chest = ATM.getChest(brokenBlock);
-		if (chest != null) {
+		ATM atm = Main.atmManager.getAtmByLocation(brokenBlock.getLocation());
+		if (atm != null) {
 			if (!e.getPlayer().hasPermission(Utils.pm)) {
 				e.getPlayer().sendMessage(ChatColor.RED + "You can not break ATMs.");
 				e.setCancelled(true);
 				return;
 			} else {
-				ATM.atms.remove(chest);
-				String id = Utils.getIdByBlock(brokenBlock);
-				if (id != null) {
-					Main.INSTANCE.getConfig().set("ATM." + id, null);
-				}
-				Utils.count = Utils.count - 1;
+				Main.atmManager.removeAtm(atm);
 			}
 		}
 	}

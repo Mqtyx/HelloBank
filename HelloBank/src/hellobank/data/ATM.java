@@ -1,65 +1,34 @@
 package hellobank.data;
 
-import java.util.List;
 import java.util.UUID;
 
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 
-import com.google.common.collect.Lists;
-
 public class ATM {
-	private UUID uuid;
 	private Block block;
 	private Location loc;
-	public static List<ATM> atms = Lists.newArrayList();
+	private UUID placer;
 	
-	public ATM(UUID uniqueId, Block block, Location loc) {
-		this.uuid = uniqueId;
+	public ATM(UUID placer, Block block, Location loc) {
+		this.placer = placer;
 		this.block = block;
 		this.loc = loc;
-		atms.add(this);
 	}
 
-	public UUID getUuid() {
-		return uuid;
+	public UUID getPlacer() {
+		return placer;
 	}
 	
-	public static boolean isChest(Block block) {
-		for (ATM atm : atms) {
-			if (atm.getBlock().equals(block)) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-	public void setUuid(UUID uuid) {
-		this.uuid = uuid;
-	}
-
 	public Block getBlock() {
 		return block;
 	}
 
-	public void setChest(Block chest) {
-		this.block = chest;
+	public void setBlock(Block block) {
+		this.block = block;
 	}
 
 	public Location getLoc() {
 		return loc;
-	}
-
-	public void setLoc(Location loc) {
-		this.loc = loc;
-	}
-
-	public static ATM getChest(Block brokenBlock) {
-		for (ATM atm : atms) {
-			if (atm.getBlock().equals(brokenBlock)) {
-				return atm;
-			}
-		}
-		return null;
 	}
 }

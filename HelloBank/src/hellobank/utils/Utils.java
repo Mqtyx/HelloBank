@@ -1,39 +1,37 @@
 package hellobank.utils;
 
-import java.util.List;
+import java.util.Arrays;
 import java.util.Map;
-import java.util.UUID;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.World;
-import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.permissions.Permission;
 
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
-import hellobank.data.ATM;
 import hellobank.data.BankAccount;
 import hellobank.main.Main;
+import hoscraft.pluginlib.adapters.LocationAdapter;
 import net.md_5.bungee.api.ChatColor;
 
 public class Utils {
 	public static Permission pm = new Permission("addRemoveATM");
+	public static final Gson GSON = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping()
+			.registerTypeAdapter(Location.class, new LocationAdapter())
+			.create();
 	public static Map<String, String> guide = Maps.newHashMap();
-	public static int count = 0;
 
-	public static void init() {
+	public static void initGuide() {
 		// Adding commands to the map
 		guide.put("addaccount <acc> <pin>", "Creates HelloBank account");
 		guide.put("removeaccount <acc> <pin>", "Deletes your HelloBank account");
 		guide.put("pin <pin>",  "To use ATMs for the next 30 seconds.");
 		guide.put("changepin <oldPin> <newPin>", "Changes your pin to a new pin you choose.");
-		if (Main.INSTANCE.getConfig().getConfigurationSection("Accounts") != null) {
+		/*if (Main.INSTANCE.getConfig().getConfigurationSection("Accounts") != null) {
 		    for (String uuid : Main.INSTANCE.getConfig().getConfigurationSection("Accounts").getKeys(false)) {
 		    	String path = "Accounts." + uuid + ".";
 		    	String accName = Main.INSTANCE.getConfig().getString(path + "Account");
@@ -68,7 +66,7 @@ public class Utils {
 		    		Main.INSTANCE.getConfig().set("ATM." + id, null);
 		    	}
 		    }
-	    }
+	    }*/
 	}
 
 	public static void showGuide(Player plr) {
@@ -80,7 +78,7 @@ public class Utils {
 		plr.sendMessage(ChatColor.GOLD + "------------------------------");
 	}
 
-	public static String getIdByBlock(Block brokenBlock) {
+	/*public static String getIdByBlock(Block brokenBlock) {
 		Location blockLoc = brokenBlock.getLocation();
 	    if (Main.INSTANCE.getConfig().getConfigurationSection("ATM") != null) {
 		    for (String id : Main.INSTANCE.getConfig().getConfigurationSection("ATM").getKeys(false)) {
@@ -97,19 +95,11 @@ public class Utils {
 		    }
 	    }
 		return null;
-	}
+	}*/
 
 	public static void update(Player plr, Inventory inv) {
-		int count = 1;
-		BankAccount acc = BankAccount.getAccountFromUUID(plr.getUniqueId());
-		acc.getItems().clear();
-		for (ItemStack item : inv.getContents()) {
-			acc.getItems().add(item);
-		}
-		for (ItemStack item : inv.getContents()) {
-			Main.INSTANCE.getConfig().set("Accounts." + plr.getUniqueId().toString() + ".Items." + count, item);
-			count++;
-		}
+		BankAccount acc = Main.accountManager.getAccountFromUUID(plr.getUniqueId());
+		acc.setItems(Arrays.asList(inv.getContents()));
 	}
 	
 	public static void debug(String msg) {
