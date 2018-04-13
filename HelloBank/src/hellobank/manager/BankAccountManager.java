@@ -10,6 +10,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
+
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
@@ -109,5 +112,14 @@ public class BankAccountManager
 		for(BankAccount account : accounts) {
 			save(account);
 		}
+	}
+
+	public BankAccount getAccountFromCard(ItemStack card) {
+		if(!BankAccount.isValidCardFormat(card)) return null;
+		
+		ItemMeta meta = card.getItemMeta();
+		List<String> lore = meta.getLore();
+		String id = lore.get(0).replace("Card id: ", "");
+		return getAccountFromUUID(UUID.fromString(id));
 	}
 }

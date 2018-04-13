@@ -13,6 +13,7 @@ import org.bukkit.entity.Player;
 
 import hellobank.data.ATM;
 import hellobank.data.BankAccount;
+import hellobank.events.BankEvents;
 import net.md_5.bungee.api.ChatColor;
 import hellobank.main.Main;
 import hellobank.utils.Utils;
@@ -29,7 +30,7 @@ public class CommandManager implements CommandExecutor {
 			}
 			String func = args[0];
 			UUID uuid = plr.getUniqueId();
-			if (func.equals("atm")) {
+			if (func.equalsIgnoreCase("atm")) {
 				if (!plr.hasPermission(Utils.pm)) {
 					plr.sendMessage(ChatColor.RED + "You don't have access to this command!");
 					return false;
@@ -37,12 +38,12 @@ public class CommandManager implements CommandExecutor {
 				Location loc = plr.getLocation();
 				Bukkit.getServer().getWorld(loc.getWorld().getName()).getBlockAt(loc).setType(Material.CHEST);
 				Block chest = loc.getWorld().getBlockAt(loc);
-				ATM atm = new ATM(uuid, chest, chest.getLocation());
+				ATM atm = new ATM(uuid, chest.getLocation());
 				Main.atmManager.addAtm(atm);
 				plr.sendMessage(ChatColor.GREEN + "Added an ATM successfully!");
 				return true;
 			}
-			if (func.equals("addaccount")) {
+			if (func.equalsIgnoreCase("addaccount")) {
 				if (Main.accountManager.getAccountFromUUID(uuid) != null) {
 					plr.sendMessage(ChatColor.RED + "You already have a registered account.");
 					return false;
@@ -61,7 +62,7 @@ public class CommandManager implements CommandExecutor {
 				plr.sendMessage(ChatColor.GREEN + "Successfully created account with '" + pin + "' pin!");
 				return true;
 			}
-			if (func.equals("deleteaccount") || func.equals("removeaccount")) {
+			if (func.equalsIgnoreCase("deleteaccount") || func.equalsIgnoreCase("removeaccount")) {
 				BankAccount acc = Main.accountManager.getAccountFromUUID(uuid);
 				if (acc == null) {
 					plr.sendMessage(ChatColor.RED + "You don't have an account to delete.");
@@ -85,10 +86,10 @@ public class CommandManager implements CommandExecutor {
 				}
 				return true;
 			}
-			if (func.equals("pin")) {
-				BankAccount acc = Main.accountManager.getAccountFromUUID(uuid);
+			if (func.equalsIgnoreCase("pin")) {
+				BankAccount acc = BankEvents.pendingAccounts.get(plr);
 				if (acc == null) {
-					plr.sendMessage(ChatColor.RED + "You don't have an account.");
+					plr.sendMessage(ChatColor.RED + "You must use an ATM before executing this command.");
 					return false;
 				}
 				if (args.length < 2) {
@@ -98,13 +99,14 @@ public class CommandManager implements CommandExecutor {
 				String enteredPassword = args[1];
 				if (!acc.getPassword().equals(enteredPassword)) {
 					plr.sendMessage(ChatColor.RED + "Wrong password.");
+					BankEvents.returnCard(plr);
 					return false;
 				}
-				acc.setLastPasswordCheck(System.currentTimeMillis());
-				plr.sendMessage(ChatColor.GREEN + "Successfully entered your account for 30 seconds!");
+				plr.sendMessage(ChatColor.GREEN + "Successfully entered account!");
+				BankEvents.openAccountInv(plr, acc);
 				return true;
 			}
-			if (func.equals("changepin")) {
+			if (func.equalsIgnoreCase("changepin")) {
 				BankAccount acc = Main.accountManager.getAccountFromUUID(uuid);
 				if (acc == null) {
 					plr.sendMessage(ChatColor.RED + "You don't have an account.");
@@ -126,6 +128,28 @@ public class CommandManager implements CommandExecutor {
 				}
 				acc.setPassword(newPass);
 				plr.sendMessage(ChatColor.GREEN + "Successfully changed your password from '" + oldPass + "' to '" + newPass + "'!");
+				return true;
+			}
+			if(func.equalsIgnoreCase("issuecard")) {
+				if(args.length < 2) {
+					plr.sendMessage(ChatColor.RED + "Usage: /bank issuecard <player>.");
+					return false;
+				}
+				
+				String playerName = args[1];
+				Player toIssue = Bukkit.getPlayer(playerName);
+				if(toIssue == null) {
+					plr.sendMessage(ChatColor.RED + "Player not found.");
+					return false;
+				}
+				BankAccount playerAccount = Main.accountManager.getAccountFromUUID(toIssue.getUniqueId());
+				if(playerAccount == null) {
+					plr.sendMessage(ChatColor.RED + "Player doesn't have a Bank Account.");
+					return false;
+				}
+				
+				plr.getInventory().addItem(playerAccount.createCard());
+				plr.sendMessage(ChatColor.GREEN + "Successfully issued card for " + toIssue.getDisplayName());
 				return true;
 			}
 			Utils.showGuide(plr);

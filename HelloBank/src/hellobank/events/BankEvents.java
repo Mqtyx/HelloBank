@@ -4,7 +4,6 @@ import java.util.Map;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -24,7 +23,9 @@ import hellobank.main.Main;
 import hellobank.utils.Utils;
 
 public class BankEvents implements Listener {
-	Map<Inventory, Player> invs = Maps.newHashMap();
+	private static Map<Inventory, Player> invs = Maps.newHashMap();
+	public static Map<Player, BankAccount> pendingAccounts = Maps.newHashMap();
+	private static Map<Player, ItemStack> pendingCards = Maps.newHashMap();
 	
 	public BankEvents(Main plugin)
 	{
@@ -34,31 +35,44 @@ public class BankEvents implements Listener {
 	@EventHandler
 	public void onPlayerInteractChest(PlayerInteractEvent e) {
 	    if (e.getAction() == Action.RIGHT_CLICK_BLOCK) {
-	        if(e.getClickedBlock().getType().equals(Material.CHEST)) {
-	        	if (!Main.atmManager.isAtm(e.getClickedBlock())) {
-	        		return;
-	        	}
-	        	Player plr = (Player) e.getPlayer();
-	        	BankAccount acc = Main.accountManager.getAccountFromUUID(plr.getUniqueId());
-	        	e.setCancelled(true);
-	        	if (acc == null) {
-	        		 plr.sendMessage(ChatColor.RED + "You don't have an account on HelloBank to have access to ATM.");
-	        		return;
-	        	}
-	        	if ((System.currentTimeMillis() - acc.getLastPasswordCheck()) > 30000) {
-	        		 plr.sendMessage(ChatColor.RED + "Use /bank pin <pin> to use ATMs for the next 30 seconds.");
-	        		 return;
-	        	}
-	        	Inventory inv = Bukkit.createInventory(null, 54);
-	        	
-	        	for (ItemStack item : acc.getItems()) {
-	        		if (item != null) {
-	        			inv.addItem(item);
-	        		}
-	        	}
-	        	plr.openInventory(inv);
-	        	invs.put(inv, plr);
-	        }
+	    	if (!Main.atmManager.isAtm(e.getClickedBlock())) {
+	    		return;
+	    	}
+	    	
+	    	Player plr = (Player) e.getPlayer();
+	    	
+	    	if(pendingAccounts.containsKey(plr))
+	    	{
+	    		plr.sendMessage(ChatColor.RED + "You are already accessing an account.");
+	    		e.setCancelled(true);
+	    		return;
+	    	}
+	    	
+	    	ItemStack clickedWith = plr.getInventory().getItemInMainHand();
+	    	
+	    	if(clickedWith != null) {
+	    		if(BankAccount.isValidCardFormat(clickedWith)) {
+	    			BankAccount acc = Main.accountManager.getAccountFromCard(clickedWith);
+	    			
+	    			if (acc == null) {
+	    				plr.sendMessage(ChatColor.RED + "Invalid card.");
+	    				e.setCancelled(true);
+	    				return;
+	    	    	}
+	    			
+	    			pendingCards.put(plr, clickedWith.clone());
+	    			plr.getInventory().removeItem(clickedWith);
+	    			plr.sendMessage(ChatColor.GREEN + "Valid Card! Use /bank pin <pin> to use access items.");
+	    			pendingAccounts.put(plr, acc);
+	    			e.setCancelled(true);
+	    		} else {
+	    			plr.sendMessage(ChatColor.RED + "You must have a Bank Card to use an ATM!");
+	    			e.setCancelled(true);
+	    		}
+	    	} else {
+	    		plr.sendMessage(ChatColor.RED + "You must have a Bank Card to use an ATM!");
+	    		e.setCancelled(true);
+	    	}
 	    }
 	}
 	
@@ -70,10 +84,11 @@ public class BankEvents implements Listener {
 			return;
 		}
 		Utils.update(plr, inv);
+		returnCard(plr);
 	}
 	
 	@EventHandler
-	public void BlockBreakEvent(BlockBreakEvent e) {
+	public void onBlockBreak(BlockBreakEvent e) {
 		Block brokenBlock = e.getBlock();
 		ATM atm = Main.atmManager.getAtmByLocation(brokenBlock.getLocation());
 		if (atm != null) {
@@ -85,5 +100,23 @@ public class BankEvents implements Listener {
 				Main.atmManager.removeAtm(atm);
 			}
 		}
+	}
+
+	public static void returnCard(Player plr) {
+		pendingAccounts.remove(plr);
+		plr.getInventory().addItem(pendingCards.get(plr));
+		pendingCards.remove(plr);
+	}
+	
+	public static void openAccountInv(Player plr, BankAccount acc) {
+		Inventory inv = Bukkit.createInventory(null, 54);
+    	
+    	for (ItemStack item : acc.getItems()) {
+    		if (item != null) {
+    			inv.addItem(item);
+    		}
+    	}
+    	plr.openInventory(inv);
+    	invs.put(inv, plr);
 	}
 }

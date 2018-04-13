@@ -30,6 +30,9 @@ public class AtmManager
 		{
 			try(Reader reader = new FileReader(atmsFile)) {
 				atms = Utils.GSON.fromJson(reader, atmListType);
+				if(atms == null) {
+					atms = Lists.newArrayList();
+				}
 			} catch (Exception e) {
 				e.printStackTrace();
 			}

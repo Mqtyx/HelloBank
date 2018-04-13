@@ -4,7 +4,6 @@ import java.util.Arrays;
 import java.util.Map;
 
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.permissions.Permission;
@@ -13,15 +12,15 @@ import com.google.common.collect.Maps;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
+import hellobank.data.ATM;
 import hellobank.data.BankAccount;
 import hellobank.main.Main;
-import hoscraft.pluginlib.adapters.LocationAdapter;
 import net.md_5.bungee.api.ChatColor;
 
 public class Utils {
 	public static Permission pm = new Permission("addRemoveATM");
 	public static final Gson GSON = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping()
-			.registerTypeAdapter(Location.class, new LocationAdapter())
+			.registerTypeAdapter(ATM.class, new ATM.ATMSerializer())
 			.create();
 	public static Map<String, String> guide = Maps.newHashMap();
 
