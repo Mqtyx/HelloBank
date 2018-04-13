@@ -21,7 +21,6 @@ import com.google.gson.stream.JsonWriter;
 
 public class LocationAdapter extends TypeAdapter<Location>
 {
-
 	@Override
 	public Location read(JsonReader reader) throws IOException
 	{
@@ -103,5 +102,4 @@ public class LocationAdapter extends TypeAdapter<Location>
 		writer.value(loc.getPitch());
 		writer.endObject();
 	}
-
 }

@@ -53,8 +53,7 @@ public class BankAccount {
 	 * Generates a list of items in this account
 	 * DO NOT USE TO STORE ITEMS! use setItems
 	 */
-	public List<ItemStack> getItems()
-	{
+	public List<ItemStack> getItems() {
 		if(items == null) return null;
 		
 		YamlConfiguration config = new YamlConfiguration();
@@ -67,8 +66,8 @@ public class BankAccount {
 		}
 		return (List<ItemStack>) config.getList("items");
 	}
-	public void setItems(List<ItemStack> items)
-	{
+	
+	public void setItems(List<ItemStack> items) {
 		if(items == null)
 		{
 			this.items = null;

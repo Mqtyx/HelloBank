@@ -50,6 +50,7 @@ public class BankEvents implements Listener {
 	        		 return;
 	        	}
 	        	Inventory inv = Bukkit.createInventory(null, 54);
+	        	
 	        	for (ItemStack item : acc.getItems()) {
 	        		if (item != null) {
 	        			inv.addItem(item);

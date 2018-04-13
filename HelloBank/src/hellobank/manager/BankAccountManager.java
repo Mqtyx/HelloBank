@@ -23,38 +23,30 @@ public class BankAccountManager
 	private File accountsFolder;
 	private Map<BankAccount, File> accountToFile = Maps.newHashMap();
 	
-	public void loadAccounts()
-	{
-		for (File accountFile : getAccountsFolder().listFiles())
-		{
-			if (!accountFile.isDirectory())
-			{
-				if (!accountFile.getName().endsWith(".json"))
-				{
+	public void loadAccounts() {
+		for (File accountFile : getAccountsFolder().listFiles()) {
+			if (!accountFile.isDirectory()) {
+				if (!accountFile.getName().endsWith(".json")) {
 					continue;
 				}
-				try(Reader reader = new FileReader(accountFile))
-				{
+				
+				try(Reader reader = new FileReader(accountFile)) {
 					BankAccount data = Utils.GSON.fromJson(reader, BankAccount.class);
 					accountToFile .put(data, accountFile);
 					accounts.add(data);
-				} catch (Exception e)
-				{
+				} catch (Exception e) {
 					e.printStackTrace();
 				}
 			}
 		}
 	}
 
-	private File getAccountsFolder()
-	{
-		if(accountsFolder == null)
-		{
+	private File getAccountsFolder() {
+		if(accountsFolder == null) {
 			accountsFolder = new File(Main.INSTANCE.getDataFolder(), "accounts");
 		}
 		
-		if(!accountsFolder.exists())
-		{
+		if(!accountsFolder.exists()) {
 			accountsFolder.mkdirs();
 		}
 		return accountsFolder;
@@ -84,47 +76,37 @@ public class BankAccountManager
 		return false;
 	}
 
-	public void addAccount(BankAccount bankAccount)
-	{
+	public void addAccount(BankAccount bankAccount) {
 		accounts.add(bankAccount);
 		save(bankAccount);
 	}
 
-	public void save(BankAccount bankAccount)
-	{
+	public void save(BankAccount bankAccount) {
 		File file = accountToFile.get(bankAccount);
-		if(file == null)
-		{
+		if(file == null) {
 			file = new File(getAccountsFolder(), bankAccount.getUUID().toString() + ".json");
 			accountToFile.put(bankAccount, file);
 		}
-		if (!file.exists())
-		{
-			try
-			{
+		
+		if (!file.exists()) {
+			try {
 				file.createNewFile();
-			} catch (IOException e)
-			{
+			} catch (IOException e) {
 				e.printStackTrace();
 			}
 		}
 
-		if (bankAccount != null)
-		{
-			try (Writer writer = new FileWriter(file))
-			{
+		if (bankAccount != null) {
+			try (Writer writer = new FileWriter(file)) {
 				Utils.GSON.toJson(bankAccount, writer);
-			} catch (IOException e)
-			{
+			} catch (IOException e) {
 				e.printStackTrace();
 			}
 		}
 	}
 	
-	public void saveAccounts()
-	{
-		for(BankAccount account : accounts)
-		{
+	public void saveAccounts() {
+		for(BankAccount account : accounts) {
 			save(account);
 		}
 	}

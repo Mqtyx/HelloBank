@@ -24,79 +24,61 @@ public class AtmManager
 	public List<ATM> atms = Lists.newArrayList();
 	private Type atmListType = new TypeToken<List<ATM>>(){}.getType();
 	
-	
-	public void loadAtms()
-	{
+	public void loadAtms() {
 		File atmsFile = new File(Main.INSTANCE.getDataFolder(), "atms.json");
 		if(atmsFile.exists())
 		{
-			try(Reader reader = new FileReader(atmsFile))
-			{
+			try(Reader reader = new FileReader(atmsFile)) {
 				atms = Utils.GSON.fromJson(reader, atmListType);
-			} catch (Exception e)
-			{
+			} catch (Exception e) {
 				e.printStackTrace();
 			}
 		}
 	}
 
-	public void saveAtms()
-	{
+	public void saveAtms() {
 		File atmsFile = new File(Main.INSTANCE.getDataFolder(), "atms.json");
-		if(!atmsFile.exists())
-		{
-			try
-			{
+		if(!atmsFile.exists()) {
+			try {
 				atmsFile.createNewFile();
-			} catch (IOException e)
-			{
+			} catch (IOException e) {
 				e.printStackTrace();
 			}
 		}
 		
-		if(!atms.isEmpty())
-		{
-			try (Writer writer = new FileWriter(atmsFile))
-			{
+		if(!atms.isEmpty()) {
+			try (Writer writer = new FileWriter(atmsFile)) {
 				Utils.GSON.toJson(atms, writer);
-			} catch (IOException e)
-			{
+			} catch (IOException e) {
 				e.printStackTrace();
 			}
 		}
 	}
 	
-	public void addAtm(ATM atm)
-	{
+	public void addAtm(ATM atm) {
 		atms.add(atm);
 		saveAtms();
 	}
 	
-	public ATM getAtmByLocation(Location location)
-	{
-		for(ATM atm : atms)
-		{
-			if(atm.getLoc().equals(location))
-			{
+	public ATM getAtmByLocation(Location location) {
+		for(ATM atm : atms) {
+			if(atm.getLoc().equals(location)) {
 				return atm;
 			}
 		}
 		return null;
 	}
 
-	public void removeAtm(ATM atm)
-	{
+	public void removeAtm(ATM atm) {
 		atms.remove(atm);
 		saveAtms();
 	}
 
-	public boolean isAtm(Location location)
-	{
+	public boolean isAtm(Location location) {
 		return getAtmByLocation(location) != null;
 	}
 	
-	public boolean isAtm(Block block)
-	{
+	public boolean isAtm(Block block) {
 		return isAtm(block.getLocation());
 	}
 }
