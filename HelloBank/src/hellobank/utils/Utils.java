@@ -129,6 +129,6 @@ public class Utils {
 		{
 			e.printStackTrace();
 		}
-		return algorithm;
+		return toHash;
 	}
 }

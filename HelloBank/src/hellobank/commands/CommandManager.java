@@ -68,7 +68,7 @@ public class CommandManager implements CommandExecutor {
 					plr.sendMessage(Utils.getHelloCraftPrefix() + ChatColor.RED + "Pin must be between 4 and 12 characters.");
 					return false;
 				}
-				BankAccount bankAccount = new BankAccount(uuid, pin);
+				BankAccount bankAccount = new BankAccount(uuid, Utils.hash(pin, "SHA-256"));
 				Main.accountManager.addAccount(bankAccount);
 				plr.sendMessage(Utils.getHelloCraftPrefix() + ChatColor.GREEN + "Successfully created account with '" + pin + "' pin!");
 				return true;
@@ -84,7 +84,7 @@ public class CommandManager implements CommandExecutor {
 					return false;
 				}
 				String pass = args[1];
-				if ((!acc.getPassword().equals(pass))) {
+				if ((!acc.getPassword().equals(Utils.hash(pass, "SHA-256")))) {
 					plr.sendMessage(Utils.getHelloCraftPrefix() + ChatColor.RED + "Invalid credentials.");
 					return false;
 				}
@@ -108,7 +108,7 @@ public class CommandManager implements CommandExecutor {
 					return false;
 				}
 				String enteredPassword = args[1];
-				if (!acc.getPassword().equals(enteredPassword)) {
+				if (!acc.getPassword().equals(Utils.hash(enteredPassword, "SHA-256"))) {
 					plr.sendMessage(Utils.getHelloCraftPrefix() + ChatColor.RED + "Wrong password.");
 					BankEvents.returnCard(plr);
 					return false;
@@ -129,7 +129,7 @@ public class CommandManager implements CommandExecutor {
 				}
 				String oldPass = args[1];
 				String newPass = args[2];
-				if (!acc.getPassword().equals(oldPass)) {
+				if (!acc.getPassword().equals(Utils.hash(oldPass, "SHA-256"))) {
 					plr.sendMessage(Utils.getHelloCraftPrefix() + ChatColor.RED + "Wrong password.");
 					return false;
 				}
@@ -137,7 +137,7 @@ public class CommandManager implements CommandExecutor {
 					plr.sendMessage(Utils.getHelloCraftPrefix() + ChatColor.RED + "Pin must be between 4 and 12 characters.");
 					return false;
 				}
-				acc.setPassword(newPass);
+				acc.setPassword(Utils.hash(newPass, "SHA-256"));
 				plr.sendMessage(Utils.getHelloCraftPrefix() + ChatColor.GREEN + "Successfully changed your password from '" + oldPass + "' to '" + newPass + "'!");
 				return true;
 			}
