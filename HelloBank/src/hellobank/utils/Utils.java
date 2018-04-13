@@ -27,6 +27,11 @@ public class Utils {
 			.registerTypeAdapter(ATM.class, new ATM.ATMSerializer())
 			.create();
 	public static Map<String, String> guide = Maps.newHashMap();
+	
+	public static String getHelloCraftPrefix()
+	{
+		return ChatColor.AQUA + "[HelloWorld] " + ChatColor.RESET;
+	}
 
 	public static void initGuide() {
 		// Adding commands to the map

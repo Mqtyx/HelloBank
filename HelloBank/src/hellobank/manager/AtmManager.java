@@ -49,12 +49,10 @@ public class AtmManager
 			}
 		}
 		
-		if(!atms.isEmpty()) {
-			try (Writer writer = new FileWriter(atmsFile)) {
-				Utils.GSON.toJson(atms, writer);
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
+		try (Writer writer = new FileWriter(atmsFile)) {
+			Utils.GSON.toJson(atms, writer);
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 	}
 	

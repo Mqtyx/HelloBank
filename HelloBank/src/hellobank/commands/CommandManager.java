@@ -5,10 +5,13 @@ import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.ArmorStand;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 
 import hellobank.data.ATM;
@@ -32,124 +35,132 @@ public class CommandManager implements CommandExecutor {
 			UUID uuid = plr.getUniqueId();
 			if (func.equalsIgnoreCase("atm")) {
 				if (!plr.hasPermission(Utils.pm)) {
-					plr.sendMessage(ChatColor.RED + "You don't have access to this command!");
+					plr.sendMessage(Utils.getHelloCraftPrefix() + ChatColor.RED + "You don't have access to this command!");
 					return false;
 				}
 				Location loc = plr.getLocation();
-				Bukkit.getServer().getWorld(loc.getWorld().getName()).getBlockAt(loc).setType(Material.CHEST);
 				Block chest = loc.getWorld().getBlockAt(loc);
+				World w = chest.getLocation().getWorld();
+				ArmorStand a = (ArmorStand) w.spawnEntity(chest.getLocation().clone().add(0.5, 1, 0.5), EntityType.ARMOR_STAND);
+				chest.setType(Material.CHEST);
+				a.setCustomName(Utils.getHelloCraftPrefix() + "ATM");
+				a.setCustomNameVisible(true);
+				a.setInvulnerable(true);
+				a.setGravity(false);
+				a.setVisible(false);
+				
 				ATM atm = new ATM(uuid, chest.getLocation());
 				Main.atmManager.addAtm(atm);
-				plr.sendMessage(ChatColor.GREEN + "Added an ATM successfully!");
+				plr.sendMessage(Utils.getHelloCraftPrefix() + ChatColor.GREEN + "Added an ATM successfully!");
 				return true;
 			}
 			if (func.equalsIgnoreCase("addaccount")) {
 				if (Main.accountManager.getAccountFromUUID(uuid) != null) {
-					plr.sendMessage(ChatColor.RED + "You already have a registered account.");
+					plr.sendMessage(Utils.getHelloCraftPrefix() + ChatColor.RED + "You already have a registered account.");
 					return false;
 				}
 				if (args.length < 2) {
-					plr.sendMessage(ChatColor.RED + "Usage: /bank addaccount <pin>.");
+					plr.sendMessage(Utils.getHelloCraftPrefix() + ChatColor.RED + "Usage: /bank addaccount <pin>.");
 					return false;
 				}
 				String pin = args[1];
 				if (pin.length() < 4 || pin.length() > 12) {
-					plr.sendMessage(ChatColor.RED + "Pin must be between 4 and 12 characters.");
+					plr.sendMessage(Utils.getHelloCraftPrefix() + ChatColor.RED + "Pin must be between 4 and 12 characters.");
 					return false;
 				}
 				BankAccount bankAccount = new BankAccount(uuid, pin);
 				Main.accountManager.addAccount(bankAccount);
-				plr.sendMessage(ChatColor.GREEN + "Successfully created account with '" + pin + "' pin!");
+				plr.sendMessage(Utils.getHelloCraftPrefix() + ChatColor.GREEN + "Successfully created account with '" + pin + "' pin!");
 				return true;
 			}
 			if (func.equalsIgnoreCase("deleteaccount") || func.equalsIgnoreCase("removeaccount")) {
 				BankAccount acc = Main.accountManager.getAccountFromUUID(uuid);
 				if (acc == null) {
-					plr.sendMessage(ChatColor.RED + "You don't have an account to delete.");
+					plr.sendMessage(Utils.getHelloCraftPrefix() + ChatColor.RED + "You don't have an account to delete.");
 					return false;
 				}
 				if (args.length < 3) {
-					plr.sendMessage(ChatColor.RED + "Usage: /bank " + func + " <pin>.");
+					plr.sendMessage(Utils.getHelloCraftPrefix() + ChatColor.RED + "Usage: /bank " + func + " <pin>.");
 					return false;
 				}
 				String pass = args[1];
 				if ((!acc.getPassword().equals(pass))) {
-					plr.sendMessage(ChatColor.RED + "Invalid credentials.");
+					plr.sendMessage(Utils.getHelloCraftPrefix() + ChatColor.RED + "Invalid credentials.");
 					return false;
 				}
 				boolean success = Main.accountManager.deleteAccount(uuid);
 				if (success) {
 					Main.INSTANCE.getConfig().set("Accounts." + uuid.toString(), null);
-					plr.sendMessage(ChatColor.GREEN + "Successfully deleted your account!");
+					plr.sendMessage(Utils.getHelloCraftPrefix() + ChatColor.GREEN + "Successfully deleted your account!");
 				} else {
-					plr.sendMessage(ChatColor.RED + "An error has occurred while deleting your account.");
+					plr.sendMessage(Utils.getHelloCraftPrefix() + ChatColor.RED + "An error has occurred while deleting your account.");
 				}
 				return true;
 			}
 			if (func.equalsIgnoreCase("pin")) {
 				BankAccount acc = BankEvents.pendingAccounts.get(plr);
 				if (acc == null) {
-					plr.sendMessage(ChatColor.RED + "You must use an ATM before executing this command.");
+					plr.sendMessage(Utils.getHelloCraftPrefix() + ChatColor.RED + "You must use an ATM before executing this command.");
 					return false;
 				}
 				if (args.length < 2) {
-					plr.sendMessage(ChatColor.RED + "Usage: /bank pin <password>.");
+					plr.sendMessage(Utils.getHelloCraftPrefix() + ChatColor.RED + "Usage: /bank pin <password>.");
 					return false;
 				}
 				String enteredPassword = args[1];
 				if (!acc.getPassword().equals(enteredPassword)) {
-					plr.sendMessage(ChatColor.RED + "Wrong password.");
+					plr.sendMessage(Utils.getHelloCraftPrefix() + ChatColor.RED + "Wrong password.");
 					BankEvents.returnCard(plr);
 					return false;
 				}
-				plr.sendMessage(ChatColor.GREEN + "Successfully entered account!");
+				plr.sendMessage(Utils.getHelloCraftPrefix() + ChatColor.GREEN + "Successfully entered account!");
 				BankEvents.openAccountInv(plr, acc);
 				return true;
 			}
 			if (func.equalsIgnoreCase("changepin")) {
 				BankAccount acc = Main.accountManager.getAccountFromUUID(uuid);
 				if (acc == null) {
-					plr.sendMessage(ChatColor.RED + "You don't have an account.");
+					plr.sendMessage(Utils.getHelloCraftPrefix() + ChatColor.RED + "You don't have an account.");
 					return false;
 				}
 				if (args.length < 3) {
-					plr.sendMessage(ChatColor.RED + "Usage: /bank changepin <oldPin> <newPin>.");
+					plr.sendMessage(Utils.getHelloCraftPrefix() + ChatColor.RED + "Usage: /bank changepin <oldPin> <newPin>.");
 					return false;
 				}
 				String oldPass = args[1];
 				String newPass = args[2];
 				if (!acc.getPassword().equals(oldPass)) {
-					plr.sendMessage(ChatColor.RED + "Wrong password.");
+					plr.sendMessage(Utils.getHelloCraftPrefix() + ChatColor.RED + "Wrong password.");
 					return false;
 				}
 				if (newPass.length() < 4 || newPass.length() > 12) {
-					plr.sendMessage(ChatColor.RED + "Pin must be between 4 and 12 characters.");
+					plr.sendMessage(Utils.getHelloCraftPrefix() + ChatColor.RED + "Pin must be between 4 and 12 characters.");
 					return false;
 				}
 				acc.setPassword(newPass);
-				plr.sendMessage(ChatColor.GREEN + "Successfully changed your password from '" + oldPass + "' to '" + newPass + "'!");
+				plr.sendMessage(Utils.getHelloCraftPrefix() + ChatColor.GREEN + "Successfully changed your password from '" + oldPass + "' to '" + newPass + "'!");
 				return true;
 			}
 			if(func.equalsIgnoreCase("issuecard")) {
 				if(args.length < 2) {
-					plr.sendMessage(ChatColor.RED + "Usage: /bank issuecard <player>.");
+					plr.sendMessage(Utils.getHelloCraftPrefix() + ChatColor.RED + "Usage: /bank issuecard <player>.");
 					return false;
 				}
 				
 				String playerName = args[1];
 				Player toIssue = Bukkit.getPlayer(playerName);
 				if(toIssue == null) {
-					plr.sendMessage(ChatColor.RED + "Player not found.");
+					plr.sendMessage(Utils.getHelloCraftPrefix() + ChatColor.RED + "Player not found.");
 					return false;
 				}
 				BankAccount playerAccount = Main.accountManager.getAccountFromUUID(toIssue.getUniqueId());
 				if(playerAccount == null) {
-					plr.sendMessage(ChatColor.RED + "Player doesn't have a Bank Account.");
+					plr.sendMessage(Utils.getHelloCraftPrefix() + ChatColor.RED + "Player doesn't have a Bank Account.");
 					return false;
 				}
 				
 				plr.getInventory().addItem(playerAccount.createCard());
-				plr.sendMessage(ChatColor.GREEN + "Successfully issued card for " + toIssue.getDisplayName());
+				plr.sendMessage(Utils.getHelloCraftPrefix() + ChatColor.GREEN + "Successfully issued card for " + toIssue.getDisplayName());
 				return true;
 			}
 			Utils.showGuide(plr);

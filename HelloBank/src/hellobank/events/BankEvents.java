@@ -1,10 +1,18 @@
 package hellobank.events;
 
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.GameMode;
+import org.bukkit.World;
 import org.bukkit.block.Block;
+import org.bukkit.entity.ArmorStand;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -15,6 +23,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
+import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
 
 import hellobank.data.ATM;
@@ -43,7 +52,7 @@ public class BankEvents implements Listener {
 	    	
 	    	if(pendingAccounts.containsKey(plr))
 	    	{
-	    		plr.sendMessage(ChatColor.RED + "You are already accessing an account.");
+	    		plr.sendMessage(Utils.getHelloCraftPrefix() + ChatColor.RED + "You are already accessing an account.");
 	    		e.setCancelled(true);
 	    		return;
 	    	}
@@ -55,22 +64,22 @@ public class BankEvents implements Listener {
 	    			BankAccount acc = Main.accountManager.getAccountFromCard(clickedWith);
 	    			
 	    			if (acc == null) {
-	    				plr.sendMessage(ChatColor.RED + "Invalid card.");
+	    				plr.sendMessage(Utils.getHelloCraftPrefix() + ChatColor.RED + "Invalid card.");
 	    				e.setCancelled(true);
 	    				return;
 	    	    	}
 	    			
 	    			pendingCards.put(plr, clickedWith.clone());
 	    			plr.getInventory().removeItem(clickedWith);
-	    			plr.sendMessage(ChatColor.GREEN + "Valid Card! Use /bank pin <pin> to use access items.");
+	    			plr.sendMessage(Utils.getHelloCraftPrefix() + ChatColor.GREEN + "Valid Card! Use /bank pin <pin> to use access items.");
 	    			pendingAccounts.put(plr, acc);
 	    			e.setCancelled(true);
 	    		} else {
-	    			plr.sendMessage(ChatColor.RED + "You must have a Bank Card to use an ATM!");
+	    			plr.sendMessage(Utils.getHelloCraftPrefix() + ChatColor.RED + "You must have a Bank Card to use an ATM!");
 	    			e.setCancelled(true);
 	    		}
 	    	} else {
-	    		plr.sendMessage(ChatColor.RED + "You must have a Bank Card to use an ATM!");
+	    		plr.sendMessage(Utils.getHelloCraftPrefix() + ChatColor.RED + "You must have a Bank Card to use an ATM!");
 	    		e.setCancelled(true);
 	    	}
 	    }
@@ -92,19 +101,37 @@ public class BankEvents implements Listener {
 		Block brokenBlock = e.getBlock();
 		ATM atm = Main.atmManager.getAtmByLocation(brokenBlock.getLocation());
 		if (atm != null) {
-			if (!e.getPlayer().hasPermission(Utils.pm)) {
-				e.getPlayer().sendMessage(ChatColor.RED + "You can not break ATMs.");
+			if (!e.getPlayer().hasPermission(Utils.pm) || e.getPlayer().getGameMode() != GameMode.CREATIVE) {
+				e.getPlayer().sendMessage(Utils.getHelloCraftPrefix() + ChatColor.RED + "You can not break ATMs.");
 				e.setCancelled(true);
 				return;
 			} else {
 				Main.atmManager.removeAtm(atm);
+				World w = brokenBlock.getLocation().getWorld();
+				Collection<Entity> entities = w.getNearbyEntities(brokenBlock.getLocation(), 1, 1, 1);
+				for(Entity entity : entities) {
+					if(entity.getType() == EntityType.ARMOR_STAND) {
+						ArmorStand stand = (ArmorStand) entity;
+						if(stand.isInvulnerable() && !stand.isVisible()) {
+							if(!Strings.isNullOrEmpty(stand.getCustomName())) {
+								if(stand.getCustomName().contains("ATM")) {
+									entity.remove();
+									break;
+								}
+							}
+						}
+					}
+				}
 			}
 		}
 	}
 
 	public static void returnCard(Player plr) {
 		pendingAccounts.remove(plr);
-		plr.getInventory().addItem(pendingCards.get(plr));
+		HashMap<Integer, ItemStack> toDrop = plr.getInventory().addItem(pendingCards.get(plr));
+		for(ItemStack stack : toDrop.values()) {
+			Item item = plr.getWorld().dropItemNaturally(plr.getLocation(), stack);
+		}
 		pendingCards.remove(plr);
 	}
 	
