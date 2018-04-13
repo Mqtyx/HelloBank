@@ -1,6 +1,8 @@
 package hellobank.data;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.List;
 import java.util.UUID;
 
@@ -55,24 +57,21 @@ public class BankAccount {
 		if(items == null) return Lists.newArrayList();
 		
 		YamlConfiguration config = new YamlConfiguration();
-		try
-		{
-			config.loadFromString(items);
-		} catch (InvalidConfigurationException e)
-		{
+		try {
+			config.loadFromString(new String(Base64.getDecoder().decode(items), StandardCharsets.UTF_8));
+		} catch (InvalidConfigurationException e) {
 			e.printStackTrace();
 		}
 		return (List<ItemStack>) config.getList("items");
 	}
 	
 	public void setItems(List<ItemStack> items) {
-		if(items == null)
-		{
+		if(items == null) {
 			this.items = null;
 		} else {
 			YamlConfiguration config = new YamlConfiguration();
 			config.set("items", items);
-			this.items = config.saveToString();
+			this.items = Base64.getEncoder().encodeToString(config.saveToString().getBytes());
 		}
 		
 		Main.accountManager.save(this);

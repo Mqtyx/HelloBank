@@ -1,5 +1,9 @@
 package hellobank.utils;
 
+import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.Map;
 
@@ -26,8 +30,8 @@ public class Utils {
 
 	public static void initGuide() {
 		// Adding commands to the map
-		guide.put("addaccount <acc> <pin>", "Creates HelloBank account");
-		guide.put("removeaccount <acc> <pin>", "Deletes your HelloBank account");
+		guide.put("addaccount <pin>", "Creates HelloBank account");
+		guide.put("removeaccount <pin>", "Deletes your HelloBank account");
 		guide.put("pin <pin>",  "To use ATMs for the next 30 seconds.");
 		guide.put("changepin <oldPin> <newPin>", "Changes your pin to a new pin you choose.");
 		/*if (Main.INSTANCE.getConfig().getConfigurationSection("Accounts") != null) {
@@ -105,5 +109,21 @@ public class Utils {
 		for (Player plr : Bukkit.getOnlinePlayers()) {
 			plr.sendMessage(msg);
 		}
+	}
+	
+	public static String hash(String toHash, String algorithm) {
+		try
+		{
+			MessageDigest md = MessageDigest.getInstance(algorithm);
+		    md.update(toHash.getBytes(StandardCharsets.UTF_8));
+		    byte[] digest = md.digest();
+
+		    String hex = String.format("%064x", new BigInteger(1, digest));
+		    return hex;
+		} catch (NoSuchAlgorithmException e)
+		{
+			e.printStackTrace();
+		}
+		return algorithm;
 	}
 }
