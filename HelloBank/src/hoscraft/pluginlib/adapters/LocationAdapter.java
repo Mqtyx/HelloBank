@@ -1,3 +1,11 @@
+/*
+ * 
+ * Class LocationAdapter from HosPluginLib.
+ * Do not use without permission.
+ * 
+ * @author Hossam Mohsen (7osCraft - HosCraft)
+ * 
+ */
 package hoscraft.pluginlib.adapters;
 
 import java.io.IOException;
