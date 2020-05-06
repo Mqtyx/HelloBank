@@ -12,7 +12,6 @@ import org.bukkit.block.Block;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
-import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -130,7 +129,7 @@ public class BankEvents implements Listener {
 		pendingAccounts.remove(plr);
 		HashMap<Integer, ItemStack> toDrop = plr.getInventory().addItem(pendingCards.get(plr));
 		for(ItemStack stack : toDrop.values()) {
-			Item item = plr.getWorld().dropItemNaturally(plr.getLocation(), stack);
+			plr.getWorld().dropItemNaturally(plr.getLocation(), stack);
 		}
 		pendingCards.remove(plr);
 	}

@@ -40,7 +40,7 @@ public class Main extends JavaPlugin {
 		accountManager.saveAccounts();
 		
 		try {
-			logger.info(this.getName() + " " +this.getServer().getVersion() + " has been disabled."); // Console outputs disable message to declare if it has been disabled successfully
+			logger.info(this.getName() + " " + this.getServer().getVersion() + " has been disabled."); // Console outputs disable message to declare if it has been disabled successfully
 			saveConfig();
 		} catch(Exception ex) {
 			logger.info(this.getName() + " couldn't be disabled");
